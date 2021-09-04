@@ -1,36 +1,58 @@
-import { Component } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { PasswordValidator } from './shared/password.validator';
+import { forbiddenNameValidator } from './shared/username.validator';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'reactive-forms';
+  registrationForm!: FormGroup;
+
   constructor(private fb: FormBuilder){ };
 
-  registrationForm = this.fb.group({
-    userName: ['Amirov'],
-    password: [''],
-    confirmPassword: [''],
-    address: this.fb.group({
-      city: [''],
-      state: [''],
-      postalCode: ['']
-    })
-  })
+  get userName() {
+    return this.registrationForm.get('userName')
+  }
+  
+  get email() {
+    return this.registrationForm.get('email')
+  }
+  get subscribe() {
+    return this.registrationForm.get('subscribe')
+  }
 
-  // registrationForm = new FormGroup({
-  //   userName: new FormControl('Abduqodir'),
-  //   password: new FormControl(''),
-  //   confirmPassword: new FormControl(''),
-  //   address: new FormGroup({
-  //     city: new FormControl(''),
-  //     state: new FormControl(''),
-  //     postalCode: new FormControl(''),
-  //   })
-  // });
+  get confirmPassword() {
+    return this.registrationForm.get('confirmPassword')
+  }
+
+  ngOnInit() {
+    this.registrationForm = this.fb.group({
+      userName: ['', [Validators.required, Validators.minLength(3), forbiddenNameValidator(/password/)]],
+      email: [''],
+      subscribe: [null],
+      password: [''],
+      confirmPassword: [''],
+      address: this.fb.group({
+        city: [''],
+        state: [''],
+        postalCode: ['']
+      })
+    }, {validator: PasswordValidator});
+
+    this.subscribe?.valueChanges.subscribe(checkedValue => {
+      const email = this.registrationForm.get('email');
+      if(checkedValue){
+        email?.setValidators(Validators.required);
+      } else {
+        email?.clearValidators()
+      };
+      email?.updateValueAndValidity();
+    })
+  }
 
   loadApiData() {
     this.registrationForm.patchValue({
