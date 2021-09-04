@@ -1,15 +1,16 @@
 <div class="container-fluid">
   <h2>Registration Form</h2>
-  <form [formGroup]="registrationForm">
+  <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
     {{registrationForm.value | json}} <br>
     {{userName?.errors | json}}
     <div class="form-group mb-3">
       <label >Username</label>
-      <input [class.is-invalid]="userName?.invalid &&
-                                  userName?.touched" 
-                                  formControlName='userName' 
-                                  type="text" 
-                                  class="form-control" 
+      <input 
+        [class.is-invalid]="userName?.invalid &&
+        userName?.touched" 
+        formControlName='userName' 
+        type="text" 
+        class="form-control" 
       />
       <div class="text-danger" *ngIf="userName?.invalid && userName?.touched">
         <small *ngIf="userName?.errors?.required">Username is required</small>
@@ -20,9 +21,13 @@
 
     <div class="form-gruop">
         <label>Email</label>
+        <button type="button" class="btn btn-secondary btn-sm m-2" (click)="addAlternateEmails()">Add e-mail</button>
         <input [class.is-invalid]="email?.invalid && email?.touched" type="text" formControlName="email" class="form-control">
         <small class="text-danger" [class.d-none]="email?.valid || email?.untouched">Email is required</small>
-      </div>
+        <div formArrayName="alternateEmails" *ngFor="let email of alternateEmails.controls; let i=index">
+          <input type="text" class="form-control my-1" [formControlName]="i">
+        </div>  
+    </div>
 
     <div class="form-check mb-3 mt-2">
       <input type="checkbox" class="form-check-input " formControlName="subscribe" id="checkbox">
@@ -40,7 +45,6 @@
       <label >Confirm Password</label>
       <input [class.is-invalid]="registrationForm?.errors?.misMatch" formControlName='confirmPassword' type="password" class="form-control">
       <small class="text-danger" *ngIf="registrationForm.errors?.misMatch">Passwords do not match</small>
-      
     </div>
 
    <div formGroupName="address">
@@ -60,7 +64,7 @@
     </div>
    </div> 
     
-    <button class="btn btn-primary " type="button">Register</button>
+    <button class="btn btn-primary " type="submit">Register</button>
     <button (click) = "loadApiData()" class="btn btn-secondary m-2" type="button">Load Api data</button>
 
   </form>

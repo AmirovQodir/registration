@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { RegistrationService } from './registration.service';
 import { PasswordValidator } from './shared/password.validator';
 import { forbiddenNameValidator } from './shared/username.validator';
 
@@ -11,8 +12,9 @@ import { forbiddenNameValidator } from './shared/username.validator';
 export class AppComponent implements OnInit {
   title = 'reactive-forms';
   registrationForm!: FormGroup;
+  submitted = false;
 
-  constructor(private fb: FormBuilder){ };
+  constructor(private fb: FormBuilder, private registrationService: RegistrationService){ };
 
   get userName() {
     return this.registrationForm.get('userName')
@@ -29,6 +31,14 @@ export class AppComponent implements OnInit {
     return this.registrationForm.get('confirmPassword')
   }
 
+  get alternateEmails() {
+    return this.registrationForm.get('alternateEmails') as FormArray;
+  }
+
+  addAlternateEmails() {
+    this.alternateEmails.push(this.fb.control(''))
+  }
+
   ngOnInit() {
     this.registrationForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(3), forbiddenNameValidator(/password/)]],
@@ -40,7 +50,8 @@ export class AppComponent implements OnInit {
         city: [''],
         state: [''],
         postalCode: ['']
-      })
+      }),
+      alternateEmails: this.fb.array([])
     }, {validator: PasswordValidator});
 
     this.subscribe?.valueChanges.subscribe(checkedValue => {
@@ -60,5 +71,15 @@ export class AppComponent implements OnInit {
       password: '123456',
       confirmPassword: '123456',
     })
+  }
+
+  onSubmit() {
+    this.registrationService.register(this.registrationForm.value)
+    .subscribe(
+      response => {
+        this.submitted = true; 
+        console.log("Success!", response)},
+      error => console.log('Error!', error)
+      )
   }
 }
